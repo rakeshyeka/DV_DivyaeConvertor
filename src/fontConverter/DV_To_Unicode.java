@@ -1,6 +1,6 @@
 package fontConverter;
 
-public class Modified_DV_To_Unicode {
+public class DV_To_Unicode {
 
 	private static String array_one[] = { "$", "%", "&", "*", "£Ã", "ÉÊ", "BÉD", "BÉ", "BÉÖ",
 
@@ -8,7 +8,7 @@ public class Modified_DV_To_Unicode {
 			"आé",
 
 			"C", "D", "F", "µÉE", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X",
-			"Y",	"Z", "[",
+			"Y", "Z", "[",
 			"\\", "]", "^", "_",
 
 			"`", "a", "b", "c", "d", "e", "f", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
@@ -54,33 +54,13 @@ public class Modified_DV_To_Unicode {
 
 		String outputText;
 
-		// **************************************************************************************
-		// The following two characters are to be replaced through proper
-		// checking
-		// of locations:
-		// **************************************************************************************
-		// "Ç"
-		// "र्" (reph)
-		//
-		// "Ê" or "Î"
-		// "ि"
-		// **************************************************************************************
-
 		outputText = "You have chosen SIMPLE TEXT  in DV-Divyae to convert into Unicode.";
 
 		String modified_substring = inputText;
 
-		// ****************************************************************************************
-		// Break the long text into small bunches of max. max_text_size
-		// characters each.
-		// ****************************************************************************************
 		int text_size = inputText.length();
 
 		String processed_text = ""; // blank
-
-		// **********************************************
-		// alert("text size = "+text_size);
-		// **********************************************
 
 		int sthiti1 = 0;
 		int sthiti2 = 0;

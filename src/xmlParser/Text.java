@@ -7,7 +7,7 @@ import org.w3c.dom.Node;
 
 import com.google.common.base.CharMatcher;
 
-import fontConverter.Modified_DV_To_Unicode;
+import fontConverter.DV_To_Unicode;
 
 public class Text {
 	private static final String CONVERSION_ERROR = "Error while converting text : %s";
@@ -33,7 +33,7 @@ public class Text {
 				nodeValue = normalizeData(nodeValue);
 				if (isHindiText(nodeValue)) {
 					try {
-						nodeValue = Modified_DV_To_Unicode.convertToUnicode(nodeValue);
+						nodeValue = DV_To_Unicode.convertToUnicode(nodeValue);
 					} catch (Exception e) {
 						Util.logMessage(Level.SEVERE, String.format(CONVERSION_ERROR, nodeValue));
 					}
