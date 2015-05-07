@@ -151,12 +151,16 @@ public class Text {
 	private static boolean isHindiText(String data) {
 		String[] words = data.split(" ");
 		int hindiWordCount = 0;
+		int wordsLength = words.length;
 		for (int i = 0; i < words.length; i++) {
+			if(Util.isNullOrEmptyOrWhiteSpace(words[i])){
+				wordsLength--;
+			}
 			if (!isAscii(words[i])) {
 				hindiWordCount++;
 			}
 		}
-		float wordProbability = ((float) hindiWordCount) / words.length;
+		float wordProbability = ((float) hindiWordCount) / wordsLength;
 		float textProability = (float) (isAscii(data) ? 0 : 1.0);
 		float finalProbability = ((data.length()) * wordProbability + textProability) / (data.length() + 1);
 		return finalProbability >= Constants.EXPECTED_PROBABILITY;
