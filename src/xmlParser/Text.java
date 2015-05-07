@@ -126,8 +126,8 @@ public class Text {
 		data = data.replace("…", "...");
 		data = data.replace("∗", "*");
 
-		data = data.replace("[", "");
-		data = data.replace("]", "");
+		// data = data.replace("[", "");
+		// data = data.replace("]", "");
 		data = data.replace("]", "");
 
 		if (isHindiText(data)) {
