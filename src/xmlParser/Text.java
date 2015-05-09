@@ -122,7 +122,7 @@ public class Text {
 		data = data.replace('–', '-');
 		data = data.replace('“', '"');
 		data = data.replace('”', '"');
-		data = data.replace('é', 'e');
+		// data = data.replace('é', 'e');
 		data = data.replace("‘", "'");
 		data = data.replace("’", "'");
 		data = data.replace("…", "...");
