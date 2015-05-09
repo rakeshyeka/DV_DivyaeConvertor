@@ -7,7 +7,7 @@ public class FontConvertor {
 				.convertToUnicode("+ÉÆiÉMÉÇiÉ, ªÉÖr ªÉÉ ¤ÉÉÿªÉ +ÉÉµÉEàÉhÉ ªÉÉ ");
 		System.out.println(output);
 		output = DV_To_Unicode
-				.convertToUnicode("[2001]]");
+				.convertToUnicode("+ÉÉÆBÉE1⁄2ä");
 		System.out.println(output);
 
 	}

@@ -34,8 +34,10 @@ public class Text {
 				if (isHindiText(nodeValue)) {
 					try {
 						nodeValue = DV_To_Unicode.convertToUnicode(nodeValue);
+						nodeValue = postProcess(nodeValue);
 					} catch (Exception e) {
-						Util.logMessage(Level.SEVERE, String.format(CONVERSION_ERROR, nodeValue));
+						Util.logMessage(Level.SEVERE,
+								String.format(CONVERSION_ERROR, nodeValue));
 					}
 				}
 				this.addToData(nodeValue);
@@ -101,11 +103,11 @@ public class Text {
 		}
 		if (this.isHindi) {
 			if (height == 14) { // if Hindi super notation for footer then
-							// ignore
+				// ignore
 				return true;
 			}
 		} else if (height == 11) { // if English super notation for footer
-								// then ignore
+									// then ignore
 			return true;
 		}
 		return false;
@@ -128,11 +130,27 @@ public class Text {
 
 		// data = data.replace("[", "");
 		// data = data.replace("]", "");
-		data = data.replace("]", "");
 
 		if (isHindiText(data)) {
 			data = data.replace("&lt;", "<");
 		}
+		return data;
+	}
+
+	private String postProcess(String data) {
+		data = data.replaceAll("ट$", "]");
+		data = data.replaceAll("ट ", "] ");
+		data = data.replaceAll("।ट", "।]");
+		data = data.replaceAll("्]", "्ट"); // Reverts back any ट converted to ]
+											// in case there is a
+											// samyukth(joiner) before the
+											// bracket
+		data = data.replace("रि]", "रिट"); // Correcting a common false positive
+											// रिट.
+
+		// Removing close square brackets from the text
+		data = data.replace("]", "");
+
 		return data;
 	}
 
@@ -153,16 +171,20 @@ public class Text {
 		int hindiWordCount = 0;
 		int wordsLength = words.length;
 		for (int i = 0; i < words.length; i++) {
-			if(Util.isNullOrEmptyOrWhiteSpace(words[i])){
+			if (Util.isNullOrEmptyOrWhiteSpace(words[i])) {
 				wordsLength--;
-			}
-			if (!isAscii(words[i])) {
-				hindiWordCount++;
+			} else if (words[i].equals("(:##)")) {
+				wordsLength--;
+			} else {
+				if (!isAscii(words[i])) {
+					hindiWordCount++;
+				}
 			}
 		}
 		float wordProbability = ((float) hindiWordCount) / wordsLength;
 		float textProability = (float) (isAscii(data) ? 0 : 1.0);
-		float finalProbability = ((data.length()) * wordProbability + textProability) / (data.length() + 1);
+		float finalProbability = ((wordsLength) * wordProbability + textProability)
+				/ (wordsLength + 1);
 		return finalProbability >= Constants.EXPECTED_PROBABILITY;
 	}
 
