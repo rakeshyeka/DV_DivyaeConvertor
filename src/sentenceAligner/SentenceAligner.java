@@ -8,26 +8,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class SentenceAligner {
-	public static void pageAligner(Page engPage, Page hinPage) {
-		List<String> engBlocks = engPage.getBlocks();
-		List<String> hinBlocks = hinPage.getBlocks();
-		int[] blockCount = new int[hinBlocks.size()];
-		int prevHinBlock = -1;
-		for (int i=0; i < engBlocks.size(); i++) {
-			initializeArray(blockCount, hinBlocks.size());
-
-			List<String> engNumbers = getNumberMatches(engBlocks.get(i));
-			updateBlockCounts(engNumbers, hinBlocks, blockCount);
-			int maxBlockIndex = getMaxBlockCountIndex(blockCount, hinBlocks.size());
-			if(maxBlockIndex==-1){
-				prevHinBlock++;
-				System.out.println(i + " - " + prevHinBlock);
-			} else{
-				System.out.println(i + " - " + maxBlockIndex);
-				prevHinBlock = maxBlockIndex;
-			}
-		}
-	}
 
 	private static int getMaxBlockCountIndex(int[] blockCount, int size) {
 		int max = 0;
@@ -79,5 +59,30 @@ public class SentenceAligner {
 			indices.add(matcher.group());
 		}
 		return indices;
+	}
+
+	public static void blockAligner(Page engPage, Page hinPage) {
+		List<String> engBlocks = engPage.getBlocks();
+		List<String> hinBlocks = hinPage.getBlocks();
+		int[] blockCount = new int[hinBlocks.size()];
+		int prevHinBlock = -1;
+		for (int i=0; i < engBlocks.size(); i++) {
+			initializeArray(blockCount, hinBlocks.size());
+
+			List<String> engNumbers = getNumberMatches(engBlocks.get(i));
+			updateBlockCounts(engNumbers, hinBlocks, blockCount);
+			int maxBlockIndex = getMaxBlockCountIndex(blockCount, hinBlocks.size());
+			if(maxBlockIndex==-1){
+				prevHinBlock++;
+				System.out.println(i + " - " + prevHinBlock);
+			} else{
+				System.out.println(i + " - " + maxBlockIndex);
+				prevHinBlock = maxBlockIndex;
+			}
+		}
+	}
+	
+	public static void pageAligner(List<Page> engPages, List<Page> hinPage){
+		
 	}
 }
