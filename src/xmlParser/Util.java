@@ -31,7 +31,6 @@ public class Util {
 
 	public static String getStringAttribute(Element el, String attribute) {
 		return el.getAttribute(attribute);
-
 	}
 
 	public static int getIntegerAttribute(Element el, String attribute) {

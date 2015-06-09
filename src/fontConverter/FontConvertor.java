@@ -4,7 +4,7 @@ public class FontConvertor {
 
 	public static void main(String[] args) {
 		String output = DV_To_Unicode
-				.convertToUnicode("+É´ÉvÉÉÉË®iÉ");
+				.convertToUnicode("àÉÉMÉÇ¶ÉÉÒ−ÉÇ ¶ÉÖBÉDãÉÉ");
 		System.out.println(output);
 		output = DV_To_Unicode
 				.convertToUnicode("ÉËcnÉÒ");

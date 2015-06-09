@@ -26,8 +26,9 @@ public class FileFilter {
 	}
 
 	private static void execute() throws IOException {
-//		String inputFolder = "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/tempXmlFiles";
-		String inputFolder = "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/xmlFiles";
+		// String inputFolder =
+		// "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/tempXmlFiles";
+		String inputFolder = "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/xmlFiles-updated";
 		String outputFolder = "/home/rakesh/Copy/Constitution/Consttn/output1";
 		parseFileInFolder(inputFolder, outputFolder);
 	}

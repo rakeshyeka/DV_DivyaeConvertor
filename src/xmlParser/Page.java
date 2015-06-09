@@ -1,23 +1,38 @@
 package xmlParser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class Page {
 	private boolean isHindi;
 	private int footerTop = 1120;
+	private Map<String, String> fontIndex = new HashMap<String, String>();
 	private List<Text> content = new ArrayList<Text>();
 	private List<Text> footer = new ArrayList<Text>();
 	private int pageNumber;
 
 	public Page(Element el) {
+		NodeList fontNl = el.getElementsByTagName(Constants.FONT_SPEC_TAG);
+		if (fontNl != null && fontNl.getLength() > 0) {
+			for (int i = 0; i < fontNl.getLength(); i++) {
+				Node node = (Element) fontNl.item(i);
+				if (node.getNodeType() == Node.ELEMENT_NODE) {
+					String font = Util.getStringAttribute((Element) node, "family");
+					String id = Util.getStringAttribute((Element) node, "id");
+					this.fontIndex.put(id, font);
+				}
+			}
+		}
 		NodeList nl = el.getElementsByTagName(Constants.TEXT_TAG);
 		if (nl != null && nl.getLength() > 0) {
 			for (int i = 0; i < nl.getLength(); i++) {
-				Text textEntity = new Text((Element) nl.item(i));
+				Text textEntity = new Text((Element) nl.item(i), this.fontIndex, null);
 				if (textEntity.isFooterBoundary()) {
 					this.footerTop = textEntity.getTop();
 				}

@@ -3,6 +3,8 @@ package xmlParser;
 public class Constants {
 	public static final String PAGE_TAG = "page";
 
+	public static final String FONT_SPEC_TAG = "fontspec";
+
 	public static final String TEXT_TAG = "text";
 
 	public static final String BOLD_TAG = "b";
@@ -24,5 +26,7 @@ public class Constants {
 	public static final Object RAW_TEXT_CHILD_TAG = "#text";
 
 	public static final String logFile = "/home/rakesh/Copy/Constitution/Consttn/output/logFile.txt";
+
+	public static final CharSequence DV_DIVYAE = "DV_Divyae";
 
 }

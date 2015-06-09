@@ -1,5 +1,6 @@
 package xmlParser;
 
+import java.util.Map;
 import java.util.logging.Level;
 
 import org.w3c.dom.Element;
@@ -19,8 +20,13 @@ public class Text {
 
 	private int top;
 	private int height;
+	private String font;
 
-	public Text(Node node) {
+	public Text(Node node, Map<String, String> fontIndex, String font) {
+
+		if (node.getNodeType() == Node.ELEMENT_NODE) {
+			updateAttributes((Element) node, fontIndex, font);
+		}
 
 		Node nd = node.getFirstChild();
 		while (nd != null) {
@@ -30,7 +36,7 @@ public class Text {
 				nodeValue = decorateBoldText(nodeValue);
 			}
 			if (!Util.isNullOrEmptyOrWhiteSpace(nodeValue)) {
-				nodeValue = normalizeData(nodeValue);
+				nodeValue = this.normalizeData(nodeValue);
 				if (isHindiText(nodeValue)) {
 					try {
 						nodeValue = DV_To_Unicode.convertToUnicode(nodeValue);
@@ -43,15 +49,11 @@ public class Text {
 				this.addToData(nodeValue);
 			}
 
-			Text childText = new Text(nd);
+			Text childText = new Text(nd, fontIndex, this.font);
 			if (Util.isNullOrEmptyOrWhiteSpace(childText.getData())) {
 				this.addToData(childText.getData());
 			}
 			nd = nd.getNextSibling();
-		}
-
-		if (node.getNodeType() == Node.ELEMENT_NODE) {
-			updateAttributes((Element) node);
 		}
 
 		if (!this.shouldIgnore()) {
@@ -60,9 +62,15 @@ public class Text {
 		this.setFooterBoundary();
 	}
 
-	private void updateAttributes(Element el) {
+	private void updateAttributes(Element el, Map<String, String> fontIndex, String font) {
 		this.top = Util.getIntegerAttribute(el, "top");
 		this.height = Util.getIntegerAttribute(el, "height");
+		String fontId = Util.getStringAttribute(el, "font");
+		if (!Util.isNullOrEmptyOrWhiteSpace(fontId)) {
+			this.font = fontIndex.get(fontId);
+		} else if (!Util.isNullOrEmptyOrWhiteSpace(font)) {
+			this.font = font;
+		}
 	}
 
 	public boolean isBold() {
@@ -107,7 +115,7 @@ public class Text {
 				return true;
 			}
 		} else if (height == 11) { // if English super notation for footer
-									// then ignore
+								// then ignore
 			return true;
 		}
 		return false;
@@ -117,7 +125,7 @@ public class Text {
 		return String.format(Constants.BOLD_TEMPLATE, text);
 	}
 
-	private static String normalizeData(String data) {
+	private String normalizeData(String data) {
 		data = data.replace('—', '-');
 		data = data.replace('–', '-');
 		data = data.replace('“', '"');
@@ -141,12 +149,14 @@ public class Text {
 		data = data.replaceAll("ट$", "]");
 		data = data.replaceAll("ट ", "] ");
 		data = data.replaceAll("।ट", "।]");
-		data = data.replaceAll("्]", "्ट"); // Reverts back any ट converted to ]
-											// in case there is a
-											// samyukth(joiner) before the
-											// bracket
-		data = data.replace("रि]", "रिट"); // Correcting a common false positive
-											// रिट.
+		data = data.replaceAll("्]", "्ट"); // Reverts back any ट converted to
+										// ]
+										// in case there is a
+										// samyukth(joiner) before the
+										// bracket
+		data = data.replace("रि]", "रिट"); // Correcting a common false
+									// positive
+									// रिट.
 
 		// Removing close square brackets from the text
 		data = data.replace("]", "");
@@ -166,7 +176,10 @@ public class Text {
 		return this.top;
 	}
 
-	private static boolean isHindiText(String data) {
+	private boolean isHindiText(String data) {
+		if (!Util.isNullOrEmptyOrWhiteSpace(this.font)) {
+			return isHindiText();
+		}
 		String[] words = data.split(" ");
 		int hindiWordCount = 0;
 		int wordsLength = words.length;
@@ -190,6 +203,10 @@ public class Text {
 
 	private static boolean isAscii(String text) {
 		return CharMatcher.ASCII.matchesAllOf(text);
+	}
+
+	private boolean isHindiText() {
+		return this.font.contains(Constants.DV_DIVYAE);
 	}
 
 }
