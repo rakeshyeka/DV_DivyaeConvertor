@@ -1,11 +1,11 @@
 package htmlParser;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
 import org.jsoup.nodes.Element;
-
-import com.google.common.base.CharMatcher;
+import org.jsoup.nodes.Node;
 
 import fontConverter.DV_To_Unicode;
 
@@ -14,66 +14,88 @@ public class Text {
 	private boolean isBold;
 	private boolean isHindi;
 	private boolean isFooterBoundary;
+	private boolean containsBold;
+	private List<Text> children = null;
 
 	private String data = "";
 
 	private String font;
 
+	public Text(String data, boolean isHindi, boolean isBold, String font) {
+		this.data = data;
+		this.isHindi = isHindi;
+		this.isBold = isBold;
+		this.font = font;
+		this.processNodeValue();
+		if (this.isBold) {
+			this.containsBold = this.isBold;
+		}
+	}
+
 	public Text(Element textEl, List<String> hindiFontClasses, List<String> boldFontClasses, String font) {
 
 		updateAttributes(textEl, hindiFontClasses, boldFontClasses, font);
-		String ownText = textEl.ownText();
-		if (!Util.isNullOrEmptyOrWhiteSpace(ownText)) {
-			ownText = processNodeValue(ownText);
-			if (this.isHindi && textEl.tagName().equals("div")) {
-				ownText = convertToUnicode(ownText);
-			}
-			this.addToData(ownText);
-		}
 
-		String childText = "";
-		for (Element child : textEl.children()) {
-			Text childNode = new Text(child, hindiFontClasses, boldFontClasses, this.font);
-			if (childNode.isHindi()) {
-				if (!Util.isNullOrEmptyOrWhiteSpace(childNode.getData())) {
-					childText += childNode.getData();
-				}
+		if (textEl.childNodeSize() > 0) {
+			this.children = new ArrayList<Text>();
+		}
+		for (Node child : textEl.childNodes()) {
+			if (child.nodeName().equals(Constants.RAW_TEXT_CHILD_TAG)) {
+				Text rawText = new Text(child.toString(), this.isHindi, this.isBold, this.font);
+				this.children.add(rawText);
 			} else {
-				childText = convertToUnicode(childText);
-				this.addToData(childText);
-				childText = "";
-
-				if (!Util.isNullOrEmptyOrWhiteSpace(childNode.getData())) {
-					this.addToData(childNode.getData());
+				Text childNode = new Text((Element) child, hindiFontClasses, boldFontClasses, this.font);
+				if (childNode.hasChildren()) {
+					this.children.addAll(childNode.getChildren());
 				}
 			}
 		}
-		if (!Util.isNullOrEmptyOrWhiteSpace(childText)) {
-			// All non-Hindi text is added directly to data, hence childText
-			// only contains Hindi text
-			childText = convertToUnicode(childText);
-			this.addToData(childText);
+
+		if (textEl.tagName().equals("div")) {
+			String finalText = "";
+			this.data = "";
+			for (Text child : this.children) {
+				if (!child.isHindi()) {
+					finalText = convertToUnicode(finalText);
+					this.addToData(finalText);
+					finalText = "";
+					if (!Util.isNullOrEmptyOrWhiteSpace(child.getData())) {
+						this.addToData(child.getData());
+					}
+				} else {
+					if (!Util.isNullOrEmptyOrWhiteSpace(child.getData())) {
+						finalText += child.getData();
+					}
+				}
+				this.containsBold = this.containsBold | child.containsBold();
+			}
+			if (!Util.isNullOrEmptyOrWhiteSpace(finalText)) {
+				finalText = convertToUnicode(finalText);
+				this.addToData(finalText);
+			}
+			if (Util.isNumber(this.data)) {
+				this.data = "";
+			}
 		}
 
 		this.setFooterBoundary();
 	}
 
-	private String processNodeValue(String nodeValue) {
-		nodeValue = this.normalizeData(nodeValue);
+	private void processNodeValue() {
+		this.normalizeData();
 		if (this.isBold) {
-			nodeValue = decorateBoldText(nodeValue);
+			// nodeValue = decorateBoldText(nodeValue);
 		}
-		return nodeValue;
 	}
 
-	private String convertToUnicode(String nodeValue) {
+	private String convertToUnicode(String text) {
 		try {
-			nodeValue = DV_To_Unicode.convertToUnicode(nodeValue);
+			text = DV_To_Unicode.convertToUnicode(text);
 		} catch (Exception e) {
 			Util.logMessage(Level.SEVERE,
-					String.format(CONVERSION_ERROR, nodeValue));
+					String.format(CONVERSION_ERROR, text));
 		}
-		return nodeValue;
+		return text;
 	}
 
 	private void updateAttributes(Element child, List<String> hindiFontClasses, List<String> boldFontClasses,
@@ -97,19 +119,19 @@ public class Text {
 
 		// Verification for boldness
 		if (fontClass != null && boldFontClasses.contains(fontClass)) {
-			this.font = fontClass;
 			this.isBold = true;
 		} else if (fontClass != null && !boldFontClasses.contains(fontClass)) {
-			this.font = fontClass;
 			this.isBold = false;
 		} else if (fontClass == null && boldFontClasses.contains(font)) {
-			this.font = font;
 			this.isBold = true;
 		} else {
-			this.font = null;
 			this.isBold = false;
 		}
 
+	}
+
+	public boolean hasChildren() {
+		return this.children != null;
 	}
 
 	public boolean isBold() {
@@ -122,6 +144,10 @@ public class Text {
 
 	public String getData() {
 		return data;
+	}
+
+	public List<Text> getChildren() {
+		return this.children;
 	}
 
 	public void addToData(String data) {
@@ -144,7 +170,7 @@ public class Text {
 		return String.format(Constants.BOLD_TEMPLATE, text);
 	}
 
-	private String normalizeData(String data) {
+	private String normalizeData() {
 		data = data.replace('—', '-');
 		data = data.replace('–', '-');
 		data = data.replace('“', '"');
@@ -153,13 +179,14 @@ public class Text {
 		data = data.replace("‘", "'");
 		data = data.replace("’", "'");
 		data = data.replace("…", "...");
-		data = data.replace("∗", "*");
+		data = data.replace("∗", "");
 
-		// data = data.replace("[", "");
-		// data = data.replace("]", "");
-
-		if (isHindiText(data)) {
+		if (this.isHindi) {
 			data = data.replace("&lt;", "<");
+			data = data.replace("&amp;", "&");
+		} else {
+			// data = data.replace("[", "");
+			// data = data.replace("]", "");
 		}
 		return data;
 	}
@@ -172,37 +199,11 @@ public class Text {
 		this.isFooterBoundary = data.equals(Constants.FOOTER_BOUNDARY);
 	}
 
-	private boolean isHindiText(String data) {
-		if (!Util.isNullOrEmptyOrWhiteSpace(this.font)) {
-			return isHindiText();
-		}
-		String[] words = data.split(" ");
-		int hindiWordCount = 0;
-		int wordsLength = words.length;
-		for (int i = 0; i < words.length; i++) {
-			if (Util.isNullOrEmptyOrWhiteSpace(words[i])) {
-				wordsLength--;
-			} else if (words[i].equals("(:##)")) {
-				wordsLength--;
-			} else {
-				if (!isAscii(words[i])) {
-					hindiWordCount++;
-				}
-			}
-		}
-		float wordProbability = ((float) hindiWordCount) / wordsLength;
-		float textProability = (float) (isAscii(data) ? 0 : 1.0);
-		float finalProbability = ((wordsLength) * wordProbability + textProability)
-				/ (wordsLength + 1);
-		return finalProbability >= Constants.EXPECTED_PROBABILITY;
+	public boolean containsBold() {
+		return containsBold;
 	}
 
-	private static boolean isAscii(String text) {
-		return CharMatcher.ASCII.matchesAllOf(text);
+	public void setContainsBold(boolean containsBold) {
+		this.containsBold = containsBold;
 	}
-
-	private boolean isHindiText() {
-		return this.font.contains(Constants.DV_DIVYAE);
-	}
-
 }

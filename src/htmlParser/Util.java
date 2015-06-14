@@ -99,4 +99,12 @@ public class Util {
 
 	}
 
+	public static boolean isNumber(String data) {
+		String subString = substringRegex(data, "\n[0-9]+");
+		if (!Util.isNullOrEmptyOrWhiteSpace(subString)) {
+			return data.equals(subString);
+		}
+		return false;
+	}
+
 }

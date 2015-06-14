@@ -21,7 +21,6 @@ public class FileFilter {
 	private static final String HINDI = "Hindi";
 	private static final String PDF_POSTFIX = ".pdf";
 	private static final String TXT_POSTFIX = ".txt";
-	private static final String XML_POSTFIX = ".xml";
 	private static final String HTML_POSTFIX = ".html";
 	private static final String ENGLISH = "English";
 
@@ -31,9 +30,9 @@ public class FileFilter {
 
 	private static void execute() throws IOException {
 		// String inputFolder =
-		// "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/tempXmlFiles";
-		String inputFolder = "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/tempPDF";
-		String outputFolder = "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/tempPDF";
+		// "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/tempPDF";
+		String inputFolder = "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/pdfFiles";
+		String outputFolder = "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/htmlFiles1";
 		parseFileInFolder(inputFolder, outputFolder);
 	}
 
@@ -83,7 +82,7 @@ public class FileFilter {
 			} else if (m.find()) {
 				String inputFile = Util.pathJoin(nodePath, subNodeName);
 				Util.logMessage(Level.INFO, String.format(CURRENT_FILE_INFO_TEMPLATE, inputFile));
-				// convertToHtml(inputFile, outputNode.getAbsolutePath());
+				convertToHtml(inputFile, outputNode.getAbsolutePath());
 				String inputHtmlFile = getHtmlInputFile(nodePath, subNodeName, inputNode, outputNode);
 				String engFile = getEnglishFile(nodePath, subNodeName, inputNode, outputNode);
 				String hinFile = getHindiFile(nodePath, subNodeName, inputNode, outputNode);

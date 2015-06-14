@@ -33,6 +33,6 @@ public class Constants {
 
 	public static final CharSequence DV_DIVYAE = "DV_Divyae";
 
-	public static final String PDF2HTML_COMMAND = "/home/rakesh/Documents/pdf2htmlEX/pdf2htmlEX";
+	public static final String PDF2HTML_COMMAND = "pdf2htmlEX/pdf2htmlEX";
 
 }

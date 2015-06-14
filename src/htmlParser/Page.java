@@ -8,7 +8,6 @@ import org.jsoup.nodes.Element;
 public class Page {
 	private boolean isHindi;
 	private List<Text> content = new ArrayList<Text>();
-	private List<Text> footer = new ArrayList<Text>();
 	private int pageNumber;
 
 	public Page(Element el, List<String> hindiFontClasses, List<String> boldFontClasses) {
@@ -62,18 +61,13 @@ public class Page {
 	public String getText() {
 		String text = "";
 		text = processTextEntities(text, this.content);
-
-		text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, Constants.FOOTER_DECORATION_BOUNDARY);
-		text = processTextEntities(text, this.footer);
-		text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, Constants.FOOTER_DECORATION_BOUNDARY);
-
 		return text;
 	}
 
 	private String processTextEntities(String text, List<Text> content) {
 		int prevBold = -2;
 		for (int i = 0; i < content.size(); i++) {
-			if (content.get(i).isBold() && i - prevBold > 1) {
+			if (content.get(i).containsBold() && i - prevBold > 1) {
 				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, Constants.BLOCK_DECORATION_BOUNDARY);
 				prevBold = i;
 			}
