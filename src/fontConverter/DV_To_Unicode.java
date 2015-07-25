@@ -52,9 +52,7 @@ public class DV_To_Unicode {
 			return "";
 		}
 
-		String outputText;
-
-		outputText = "You have chosen SIMPLE TEXT  in DV-Divyae to convert into Unicode.";
+		String outputText="";
 
 		String modified_substring = inputText;
 
