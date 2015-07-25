@@ -1,7 +1,7 @@
 package fontConverter;
 
 public class Chanakya_To_Unicode {
-	private String array_one[] = {
+	private static String array_one[] = {
 
 			"¤", "U",
 
@@ -44,7 +44,7 @@ public class Chanakya_To_Unicode {
 			"®", "v", "w", "x", "y", "z", "{", "|", "}", "~",
 			"्ो", "्ौ", "्ाे", "्ाा", "ाे", "ाे", "ाै", "्ा", "ंु", "ओे", "ोे", "ाे", "ईंं" };
 
-	private String array_two[] = {
+	private static String array_two[] = {
 
 			"", "",
 
@@ -88,9 +88,9 @@ public class Chanakya_To_Unicode {
 
 			"े", "ै", "े", "ा", "ो", "ो", "ौ", "", "ुं", "ओ", "ो", "ो", "ईं" };
 
-	private int array_one_length = array_one.length;
+	private static int array_one_length = array_one.length;
 
-	public String convertToUnicode(String inputText) {
+	public static String convertToUnicode(String inputText) {
 		if (inputText == null || inputText.isEmpty()) {
 			return "";
 		}
@@ -110,7 +110,7 @@ public class Chanakya_To_Unicode {
 
 	}
 
-	private String Replace_Symbols(String modified_substring) {
+	private static String Replace_Symbols(String modified_substring) {
 
 		// substitute array_two elements in place of corresponding array_one
 		// elements
@@ -146,7 +146,7 @@ public class Chanakya_To_Unicode {
 
 	} // end of the function Replace_Symbols
 
-	private String shiftMathrasPosition(String modified_substring) {
+	private static String shiftMathrasPosition(String modified_substring) {
 		int position_of_i = modified_substring.indexOf("ç");
 
 		while (position_of_i != -1) // while-02

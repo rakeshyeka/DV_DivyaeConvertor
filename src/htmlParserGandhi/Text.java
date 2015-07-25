@@ -1,4 +1,4 @@
-package htmlParser;
+package htmlParserGandhi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,11 +10,14 @@ import org.jsoup.nodes.Node;
 import fontConverter.DV_To_Unicode;
 
 public class Text {
+	public static boolean canIgnore = false;
+
 	private static final String CONVERSION_ERROR = "Error while converting text : %s";
 	private boolean isBold;
 	private boolean isHindi;
 	private boolean isFooterBoundary;
 	private boolean containsBold;
+	private boolean ignoreText;
 	private List<Text> children = null;
 
 	private String data = "";
@@ -32,9 +35,9 @@ public class Text {
 		}
 	}
 
-	public Text(Element textEl, List<String> hindiFontClasses, List<String> boldFontClasses, String font) {
+	public Text(Element textEl) {
 
-		updateAttributes(textEl, hindiFontClasses, boldFontClasses, font);
+		updateAttributes(textEl);
 
 		if (textEl.childNodeSize() > 0) {
 			this.children = new ArrayList<Text>();
@@ -44,37 +47,25 @@ public class Text {
 				Text rawText = new Text(child.toString(), this.isHindi, this.isBold, this.font);
 				this.children.add(rawText);
 			} else {
-				Text childNode = new Text((Element) child, hindiFontClasses, boldFontClasses, this.font);
+				Text childNode = new Text((Element) child);
 				if (childNode.hasChildren()) {
 					this.children.addAll(childNode.getChildren());
 				}
 			}
 		}
 
-		if (textEl.tagName().equals("div")) {
+		if (this.children != null
+				&& (textEl.tagName().equals("p") || Util.substringRegex(textEl.tagName(), "h[0-9]+") != null)) {
 			String finalText = "";
 			this.data = "";
 			for (Text child : this.children) {
-				if (!child.isHindi()) {
-					finalText = convertToUnicode(finalText);
-					this.addToData(finalText);
-					finalText = "";
-					if (!Util.isNullOrEmptyOrWhiteSpace(child.getData())) {
-						this.addToData(child.getData());
-					}
-				} else {
-					if (!Util.isNullOrEmptyOrWhiteSpace(child.getData())) {
-						finalText += child.getData();
-					}
+				if (!Util.isNullOrEmptyOrWhiteSpace(child.getData())) {
+					finalText += child.getData();
 				}
-				this.containsBold = this.containsBold | child.containsBold() | child.isBold();
+				this.containsBold = this.containsBold | child.containsBold() | child.isBold() | this.isBold;
 			}
 			if (!Util.isNullOrEmptyOrWhiteSpace(finalText)) {
-				finalText = convertToUnicode(finalText);
 				this.addToData(finalText);
-			}
-			if (Util.isNumber(this.data)) {
-				this.data = "";
 			}
 		}
 
@@ -98,42 +89,19 @@ public class Text {
 		return text;
 	}
 
-	private void updateAttributes(Element child, List<String> hindiFontClasses, List<String> boldFontClasses,
-			String font) {
+	private void updateAttributes(Element child) {
 		String classValue = child.attr("class");
-		String fontClass = Util.substringRegex(classValue, "ff[0-9]+");
-		// verification for Hindi text
-		if (fontClass != null && hindiFontClasses.contains(fontClass)) {
-			this.font = fontClass;
-			this.isHindi = true;
-		} else if (fontClass != null && !hindiFontClasses.contains(fontClass)) {
-			this.font = fontClass;
-			this.isHindi = false;
-		} else if (fontClass == null && hindiFontClasses.contains(font)) {
-			this.font = font;
-			this.isHindi = true;
-		} else {
-			this.font = null;
-			this.isHindi = false;
-		}
+		String fontClass = Util.substringRegex(classValue, "block[0-9]+");
 
 		// Verification for boldness
-		if (fontClass != null && boldFontClasses.contains(fontClass)) {
+		if (Util.substringRegex(child.tagName(), "h[0-9]+") != null) {
 			this.isBold = true;
-		} else if (fontClass != null && !boldFontClasses.contains(fontClass)) {
-			this.isBold = false;
-		} else if (fontClass == null && boldFontClasses.contains(font)) {
-			this.isBold = true;
-		} else {
-			this.isBold = false;
 		}
 
-		// String marginShiftClass = Util.substringRegex(classValue,
-		// "_[0-9]+");
-		// if (marginShiftClass != null) {
-		// this.isBold = true;
-		// }
-
+		// Verification for text ignore
+		if (Text.canIgnore && !Util.isNullOrEmptyOrWhiteSpace(fontClass) && fontClass.equals("block10")) {
+			this.ignoreText = true;
+		}
 	}
 
 	public boolean hasChildren() {
@@ -142,6 +110,10 @@ public class Text {
 
 	public boolean isBold() {
 		return isBold;
+	}
+
+	public boolean canIgnore() {
+		return this.ignoreText;
 	}
 
 	public void setBold(boolean isBold) {
@@ -172,10 +144,6 @@ public class Text {
 		return isHindi;
 	}
 
-	private String decorateBoldText(String text) {
-		return String.format(Constants.BOLD_TEMPLATE, text);
-	}
-
 	private String normalizeData() {
 		data = data.replace('—', '-');
 		data = data.replace('–', '-');
@@ -186,14 +154,7 @@ public class Text {
 		data = data.replace("’", "'");
 		data = data.replace("…", "...");
 		data = data.replace("∗", "");
-
-		if (this.isHindi) {
-			data = data.replace("&lt;", "<");
-			data = data.replace("&amp;", "&");
-		} else {
-			// data = data.replace("[", "");
-			// data = data.replace("]", "");
-		}
+		data = data.replace("&nbsp;", " ");
 		return data;
 	}
 

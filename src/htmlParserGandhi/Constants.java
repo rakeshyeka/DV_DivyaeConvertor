@@ -1,7 +1,7 @@
-package htmlParser;
+package htmlParserGandhi;
 
 public class Constants {
-	public static final String PAGE_CONTAINER_TAG = "page-container";
+	public static final String PAGE_CONTAINER_TAG = "body";
 
 	public static final String PAGE_TAG = "page";
 

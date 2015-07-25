@@ -22,7 +22,7 @@ public class DomParser {
 	private static final String BOLD = "Bold";
 	private static final String DV_DIVYAE = "DV_Divyae";
 	private static final String BASE64_PATTERN = "(?!base64)[^,]+(?=\\) format\\(\"truetype\"\\))";
-	private static final String FONT_FAMILY_PATTERN = "(?!font-family: )ff[0-9]+(?=;)";
+	private static final String FONT_FAMILY_PATTERN = "(?!font-family: )ff[0-9a-fA-F]+(?=;)";
 	private static final String FONT_FACE = "@font-face";
 	private Document dom;
 	private List<Page> pages;
@@ -51,7 +51,6 @@ public class DomParser {
 			if (pages.get(i).isHindi()) {
 				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, Constants.PAGE_DECORATION_BOUNDARY);
 				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, pages.get(i).getText());
-				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, Constants.PAGE_DECORATION_BOUNDARY);
 				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, "");
 			}
 		}
@@ -64,7 +63,6 @@ public class DomParser {
 			if (pages.get(i).isEnglish()) {
 				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, Constants.PAGE_DECORATION_BOUNDARY);
 				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, pages.get(i).getText());
-				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, Constants.PAGE_DECORATION_BOUNDARY);
 				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, "");
 			}
 		}
