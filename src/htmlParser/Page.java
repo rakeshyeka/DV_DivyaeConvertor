@@ -2,6 +2,7 @@ package htmlParser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.jsoup.nodes.Element;
 
@@ -10,7 +11,7 @@ public class Page {
 	private List<Text> content = new ArrayList<Text>();
 	private int pageNumber;
 
-	public Page(Element el, List<String> hindiFontClasses, List<String> boldFontClasses) {
+	public Page(Element el, Map<String, String> hindiFontClasses, List<String> boldFontClasses) {
 		if (el != null && el.childNodeSize() > 0) {
 			for (Element child : el.getElementsByClass("t")) {
 				Text textEntity = new Text(child, hindiFontClasses, boldFontClasses, null);
@@ -20,7 +21,7 @@ public class Page {
 		this.setHindi();
 	}
 
-	public static List<Page> buildPageFromNodeList(Element element, List<String> hindiFontClasses,
+	public static List<Page> buildPageFromNodeList(Element element, Map<String, String> hindiFontClasses,
 			List<String> boldFontClasses) {
 		List<Page> pageList = new ArrayList<Page>();
 		for (Element child : element.getElementsByClass("pf")) {

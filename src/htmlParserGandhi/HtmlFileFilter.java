@@ -39,8 +39,8 @@ public class HtmlFileFilter {
 	private static void execute() throws IOException {
 		// String inputFolder =
 		// "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/tempPDF";
-		String inputFolder = "/home/rakesh/Copy/Gandhi-Autobiography/An Autobiography or The Story of My Experi - M. K. Gandhi.htmlz_FILES";
-		String outputFolder = "/home/rakesh/Copy/Gandhi-Autobiography/Processed/English/";
+		String inputFolder = "/home/rakesh/Copy/Gandhi-Autobiography/sty ke pryog athvaa aatmkthaa - mo. k. gaaNdhii.htmlz_FILES";
+		String outputFolder = "/home/rakesh/Copy/Gandhi-Autobiography/Processed/Hindi";
 		parseFileInFolder(inputFolder, outputFolder);
 	}
 

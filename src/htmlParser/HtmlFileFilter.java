@@ -20,6 +20,7 @@ public class HtmlFileFilter {
 	private static final String HTML_POSTFIX = ".html";
 	private static final String TXT_POSTFIX = ".txt";
 	private static final String ENGLISH = "English";
+	private static Config config;
 
 	public static void parseFileInFolder(String inputFolder, String outputFolder) {
 		File inputDirectory = new File(inputFolder);
@@ -39,9 +40,10 @@ public class HtmlFileFilter {
 	private static void execute() throws IOException {
 		// String inputFolder =
 		// "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/tempPDF";
-		String inputFolder = "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/htmlFiles";
-		String outputFolder = "/home/rakesh/Copy/Constitution/Consttn/output1";
-		parseFileInFolder(inputFolder, outputFolder);
+		HtmlFileFilter.config = new Config(true);
+		config.setInputFolder("/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/htmlFiles");
+		config.setOutputFolder("/home/rakesh/Copy/Constitution/Consttn/output1");
+		parseFileInFolder(config.getInputFolder(), config.getOutputFolder());
 	}
 
 	private static void parseFile(String inputFile, String engFile, String hinFile) {
@@ -66,6 +68,19 @@ public class HtmlFileFilter {
 		}
 	}
 
+	private static void parseFile(String inputFile, String outputFile) {
+		DomParser dom = new DomParser(inputFile);
+		PrintWriter out;
+		String pages = dom.getPages();
+		try {
+			out = new PrintWriter(outputFile);
+			out.println(pages);
+			out.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
 	private static void recurseDirectory(File currentNode, File inputNode, File outputNode) {
 		String nodePath = currentNode.getAbsolutePath();
 		List<String> fileList = Arrays.asList(currentNode.list());
@@ -79,9 +94,14 @@ public class HtmlFileFilter {
 			} else if (m.find()) {
 				String inputFile = Util.pathJoin(nodePath, subNodeName);
 				Util.logMessage(Level.INFO, String.format(CURRENT_FILE_INFO_TEMPLATE, inputFile));
-				String engFile = getEnglishFile(nodePath, subNodeName, inputNode, outputNode);
-				String hinFile = getHindiFile(nodePath, subNodeName, inputNode, outputNode);
-				parseFile(inputFile, engFile, hinFile);
+				if (config.isMixedLanguage()) {
+					String engFile = getEnglishFile(nodePath, subNodeName, inputNode, outputNode);
+					String hinFile = getHindiFile(nodePath, subNodeName, inputNode, outputNode);
+					parseFile(inputFile, engFile, hinFile);
+				} else {
+					String outputFile = getOutputFilePath(nodePath, subNodeName, inputNode, outputNode, "");
+					parseFile(inputFile, outputFile);
+				}
 			}
 		}
 	}

@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -18,15 +20,13 @@ import com.steadystate.css.parser.CSSOMParser;
 import com.steadystate.css.parser.SACParserCSS3;
 
 public class DomParser {
-	private static final String UNTITLED_TTF = "UntitledTTF";
 	private static final String BOLD = "Bold";
-	private static final String DV_DIVYAE = "DV_Divyae";
 	private static final String BASE64_PATTERN = "(?!base64)[^,]+(?=\\) format\\(\"truetype\"\\))";
 	private static final String FONT_FAMILY_PATTERN = "(?!font-family: )ff[0-9a-fA-F]+(?=;)";
 	private static final String FONT_FACE = "@font-face";
 	private Document dom;
 	private List<Page> pages;
-	private List<String> hindiFontClasses = new ArrayList<String>();
+	private Map<String, String> hindiFontClasses = new HashMap<String, String>();
 	private List<String> boldFontClasses = new ArrayList<String>();
 
 	public DomParser(String file) {
@@ -69,7 +69,17 @@ public class DomParser {
 		return text;
 	}
 
-	private static List<String> getFontClasses(Document dom, List<String> hindiFontClasses,
+	public String getPages() {
+		String text = "";
+		for (int i = 0; i < pages.size(); i++) {
+			text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, Constants.PAGE_DECORATION_BOUNDARY);
+			text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, pages.get(i).getText());
+			text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, "");
+		}
+		return text;
+	}
+
+	private static Map<String, String> getFontClasses(Document dom, Map<String, String> hindiFontClasses,
 			List<String> boldFontClasses) {
 		for (Element style : dom.getElementsByTag(Constants.STYLE_TAG)) {
 			String data = style.data();
@@ -89,9 +99,10 @@ public class DomParser {
 							String fontDataEncoded = Util.substringRegex(cssText, BASE64_PATTERN);
 							if (fontDataEncoded != null) {
 								fontData = Util.decode(fontDataEncoded);
-								if ((fontData.contains(DV_DIVYAE) || fontData.contains(UNTITLED_TTF))
-										&& !hindiFontClasses.contains(fontFamily)) {
-									hindiFontClasses.add(fontFamily);
+								String convertorClass = Config.getHindiConvertorClass(fontData);
+								if (convertorClass != null
+										&& !hindiFontClasses.containsKey(fontFamily)) {
+									hindiFontClasses.put(fontFamily, convertorClass);
 								}
 								if (fontData.contains(BOLD) && !boldFontClasses.contains(fontFamily)) {
 									boldFontClasses.add(fontFamily);

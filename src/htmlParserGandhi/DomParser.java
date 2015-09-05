@@ -40,7 +40,7 @@ public class DomParser {
 		for (int i = 0; i < texts.size(); i++) {
 			Text text = texts.get(i);
 			if (text.containsBold()) {
-				data = String.format(Constants.NEWLINE_JOIN_TEMPLATE, data, Constants.BLOCK_DECORATION_BOUNDARY);
+				data = String.format(Constants.NEWLINE_JOIN_TEMPLATE, data, Constants.PAGE_DECORATION_BOUNDARY);
 			}
 			if (!text.canIgnore()) {
 				data = String.format(Constants.NEWLINE_JOIN_TEMPLATE, data, text.getData());

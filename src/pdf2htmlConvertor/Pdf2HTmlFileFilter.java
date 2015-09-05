@@ -22,8 +22,8 @@ public class Pdf2HTmlFileFilter {
 	private static void execute() throws IOException {
 		// String inputFolder =
 		// "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/tempPDF";
-		String inputFolder = "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/pdfFiles";
-		String outputFolder = "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/htmlFiles";
+		String inputFolder = "/home/rakesh/Copy/NCERT/PDF";
+		String outputFolder = "/home/rakesh/Copy/NCERT/html";
 		parseFileInFolder(inputFolder, outputFolder);
 	}
 
@@ -39,6 +39,8 @@ public class Pdf2HTmlFileFilter {
 	}
 
 	private static void recurseDirectory(File currentNode, File inputNode, File outputNode) {
+		String outputFolder = getOutputNodePath(currentNode, inputNode, outputNode);
+		createOutputFolder(outputFolder);
 		String nodePath = currentNode.getAbsolutePath();
 		List<String> fileList = Arrays.asList(currentNode.list());
 		Collections.sort(fileList);
@@ -51,8 +53,25 @@ public class Pdf2HTmlFileFilter {
 			} else if (m.find()) {
 				String inputFile = Util.pathJoin(nodePath, subNodeName);
 				Util.logMessage(Level.INFO, String.format(CURRENT_FILE_INFO_TEMPLATE, inputFile));
-				Pdf2HtmlEx.convertToHtml(inputFile, outputNode.getAbsolutePath());
+				Pdf2HtmlEx.convertToHtml(inputFile, outputFolder);
 			}
+		}
+	}
+
+	private static String getOutputNodePath(File currentNode, File inputNode, File outputNode) {
+		String outputFolder = "";
+		String inputPath = currentNode.getAbsolutePath();
+		outputFolder = Util.pathJoin(outputNode.getAbsolutePath()
+				, inputPath.replace(inputNode.getAbsolutePath(), ""));
+		return outputFolder;
+	}
+
+	private static void createOutputFolder(String outputFolder) {
+		String command = "mkdir -p " + outputFolder;
+		try {
+			Util.runSystemCommand(command);
+		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 

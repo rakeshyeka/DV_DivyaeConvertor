@@ -107,4 +107,14 @@ public class Util {
 		return false;
 	}
 
+	public static boolean stringsEqual(String string1, String string2) {
+		if (string1 != null) {
+			return string1.equals(string2);
+		} else {
+			if (string2 != null) {
+				return string2.equals(string1);
+			}
+			return true;
+		}
+	}
 }

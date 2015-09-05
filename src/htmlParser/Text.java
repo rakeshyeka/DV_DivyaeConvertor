@@ -1,13 +1,13 @@
 package htmlParser;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
-
-import fontConverter.DV_To_Unicode;
 
 public class Text {
 	private static final String CONVERSION_ERROR = "Error while converting text : %s";
@@ -19,32 +19,33 @@ public class Text {
 
 	private String data = "";
 
-	private String font;
+	private String fontConvertor;
 
-	public Text(String data, boolean isHindi, boolean isBold, String font) {
+	public Text(String data, boolean isHindi, boolean isBold, String fontConvertor) {
 		this.data = data;
 		this.isHindi = isHindi;
 		this.isBold = isBold;
-		this.font = font;
+		this.fontConvertor = fontConvertor;
 		this.processNodeValue();
 		if (this.isBold) {
 			this.containsBold = this.isBold;
 		}
 	}
 
-	public Text(Element textEl, List<String> hindiFontClasses, List<String> boldFontClasses, String font) {
+	public Text(Element textEl, Map<String, String> hindiFontClasses, List<String> boldFontClasses,
+			String fontConvertor) {
 
-		updateAttributes(textEl, hindiFontClasses, boldFontClasses, font);
+		updateAttributes(textEl, hindiFontClasses, boldFontClasses, fontConvertor);
 
 		if (textEl.childNodeSize() > 0) {
 			this.children = new ArrayList<Text>();
 		}
 		for (Node child : textEl.childNodes()) {
 			if (child.nodeName().equals(Constants.RAW_TEXT_CHILD_TAG)) {
-				Text rawText = new Text(child.toString(), this.isHindi, this.isBold, this.font);
+				Text rawText = new Text(child.toString(), this.isHindi, this.isBold, this.fontConvertor);
 				this.children.add(rawText);
 			} else {
-				Text childNode = new Text((Element) child, hindiFontClasses, boldFontClasses, this.font);
+				Text childNode = new Text((Element) child, hindiFontClasses, boldFontClasses, this.fontConvertor);
 				if (childNode.hasChildren()) {
 					this.children.addAll(childNode.getChildren());
 				}
@@ -54,14 +55,16 @@ public class Text {
 		if (textEl.tagName().equals("div")) {
 			String finalText = "";
 			this.data = "";
+			String oldFontConvertor = null;
 			for (Text child : this.children) {
-				if (!child.isHindi()) {
-					finalText = convertToUnicode(finalText);
+				if (!Util.stringsEqual(oldFontConvertor, child.getFontConvertor())) {
+					finalText = convertToUnicode(finalText, oldFontConvertor);
 					this.addToData(finalText);
 					finalText = "";
 					if (!Util.isNullOrEmptyOrWhiteSpace(child.getData())) {
-						this.addToData(child.getData());
+						finalText += child.getData();
 					}
+					oldFontConvertor = child.getFontConvertor();
 				} else {
 					if (!Util.isNullOrEmptyOrWhiteSpace(child.getData())) {
 						finalText += child.getData();
@@ -70,7 +73,7 @@ public class Text {
 				this.containsBold = this.containsBold | child.containsBold() | child.isBold();
 			}
 			if (!Util.isNullOrEmptyOrWhiteSpace(finalText)) {
-				finalText = convertToUnicode(finalText);
+				finalText = convertToUnicode(finalText, oldFontConvertor);
 				this.addToData(finalText);
 			}
 			if (Util.isNumber(this.data)) {
@@ -88,9 +91,14 @@ public class Text {
 		}
 	}
 
-	private String convertToUnicode(String text) {
+	private String convertToUnicode(String text, String fontConvertor) {
 		try {
-			text = DV_To_Unicode.convertToUnicode(text);
+			if (!Util.isNullOrEmptyOrWhiteSpace(fontConvertor)) {
+				Class<?> clazz = Class.forName("fontConverter." + fontConvertor);
+				Method method = clazz.getMethod("convertToUnicode", String.class);
+				// text = DV_To_Unicode.convertToUnicode(text);
+				text = (String) method.invoke(null, text);
+			}
 		} catch (Exception e) {
 			Util.logMessage(Level.SEVERE,
 					String.format(CONVERSION_ERROR, text));
@@ -98,22 +106,20 @@ public class Text {
 		return text;
 	}
 
-	private void updateAttributes(Element child, List<String> hindiFontClasses, List<String> boldFontClasses,
-			String font) {
+	private void updateAttributes(Element child, Map<String, String> hindiFontClasses, List<String> boldFontClasses,
+			String parentFontConvertor) {
 		String classValue = child.attr("class");
 		String fontClass = Util.substringRegex(classValue, "ff[0-9]+");
+		String localFontConvertor = hindiFontClasses.get(fontClass);
 		// verification for Hindi text
-		if (fontClass != null && hindiFontClasses.contains(fontClass)) {
-			this.font = fontClass;
+		if (localFontConvertor != null) {
+			this.fontConvertor = localFontConvertor;
 			this.isHindi = true;
-		} else if (fontClass != null && !hindiFontClasses.contains(fontClass)) {
-			this.font = fontClass;
-			this.isHindi = false;
-		} else if (fontClass == null && hindiFontClasses.contains(font)) {
-			this.font = font;
+		} else if (localFontConvertor == null && parentFontConvertor != null) {
+			this.fontConvertor = parentFontConvertor;
 			this.isHindi = true;
 		} else {
-			this.font = null;
+			this.fontConvertor = null;
 			this.isHindi = false;
 		}
 
@@ -122,7 +128,7 @@ public class Text {
 			this.isBold = true;
 		} else if (fontClass != null && !boldFontClasses.contains(fontClass)) {
 			this.isBold = false;
-		} else if (fontClass == null && boldFontClasses.contains(font)) {
+		} else if (fontClass == null && boldFontClasses.contains(parentFontConvertor)) {
 			this.isBold = true;
 		} else {
 			this.isBold = false;
@@ -211,5 +217,9 @@ public class Text {
 
 	public void setContainsBold(boolean containsBold) {
 		this.containsBold = containsBold;
+	}
+
+	public String getFontConvertor() {
+		return this.fontConvertor;
 	}
 }
