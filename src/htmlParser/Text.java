@@ -13,6 +13,7 @@ public class Text {
 	private static final String CONVERSION_ERROR = "Error while converting text : %s";
 	private boolean isBold;
 	private boolean isHindi;
+	private boolean isColoured;
 	private boolean isFooterBoundary;
 	private boolean containsBold;
 	private List<Text> children = null;
@@ -21,10 +22,11 @@ public class Text {
 
 	private String fontConvertor;
 
-	public Text(String data, boolean isHindi, boolean isBold, String fontConvertor) {
+	public Text(String data, boolean isHindi, boolean isBold, boolean isColoured, String fontConvertor) {
 		this.data = data;
 		this.isHindi = isHindi;
 		this.isBold = isBold;
+		this.setColoured(isColoured);
 		this.fontConvertor = fontConvertor;
 		this.processNodeValue();
 		if (this.isBold) {
@@ -32,20 +34,20 @@ public class Text {
 		}
 	}
 
-	public Text(Element textEl, Map<String, String> hindiFontClasses, List<String> boldFontClasses,
-			String fontConvertor) {
+	public Text(Element textEl, Boolean parentColoured, String fontConvertor) {
 
-		updateAttributes(textEl, hindiFontClasses, boldFontClasses, fontConvertor);
+		updateAttributes(textEl, parentColoured, fontConvertor);
 
 		if (textEl.childNodeSize() > 0) {
 			this.children = new ArrayList<Text>();
 		}
 		for (Node child : textEl.childNodes()) {
 			if (child.nodeName().equals(Constants.RAW_TEXT_CHILD_TAG)) {
-				Text rawText = new Text(child.toString(), this.isHindi, this.isBold, this.fontConvertor);
+				Text rawText = new Text(child.toString(), this.isHindi, this.isBold, this.isColoured,
+						this.fontConvertor);
 				this.children.add(rawText);
 			} else {
-				Text childNode = new Text((Element) child, hindiFontClasses, boldFontClasses, this.fontConvertor);
+				Text childNode = new Text((Element) child, this.isColoured, this.fontConvertor);
 				if (childNode.hasChildren()) {
 					this.children.addAll(childNode.getChildren());
 				}
@@ -106,10 +108,14 @@ public class Text {
 		return text;
 	}
 
-	private void updateAttributes(Element child, Map<String, String> hindiFontClasses, List<String> boldFontClasses,
-			String parentFontConvertor) {
+	private void updateAttributes(Element child, Boolean parentColoured, String parentFontConvertor) {
 		String classValue = child.attr("class");
 		String fontClass = Util.substringRegex(classValue, "ff[0-9]+");
+		String fontColour = Util.substringRegex(classValue, "fc[0-9]+");
+		TextPropertyVault vault = TextPropertyVault.getVault();
+		Map<String, String> hindiFontClasses = vault.getHindiFontClasses();
+		List<String> boldFontClasses = vault.getBoldFontClasses();
+		Map<String, Boolean> colouredClasses = vault.getColouredClasses();
 		String localFontConvertor = hindiFontClasses.get(fontClass);
 		// verification for Hindi text
 		if (localFontConvertor != null) {
@@ -132,6 +138,16 @@ public class Text {
 			this.isBold = true;
 		} else {
 			this.isBold = false;
+		}
+
+		if (fontColour != null && colouredClasses.get(fontColour)) {
+			this.isColoured = true;
+		} else if (fontColour != null && !colouredClasses.get(fontColour)) {
+			this.isColoured = false;
+		} else if (fontColour == null && parentColoured) {
+			this.isColoured = true;
+		} else {
+			this.isColoured = false;
 		}
 
 		// String marginShiftClass = Util.substringRegex(classValue,
@@ -221,5 +237,13 @@ public class Text {
 
 	public String getFontConvertor() {
 		return this.fontConvertor;
+	}
+
+	public boolean isColoured() {
+		return isColoured;
+	}
+
+	public void setColoured(boolean isColoured) {
+		this.isColoured = isColoured;
 	}
 }

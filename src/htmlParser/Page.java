@@ -2,7 +2,6 @@ package htmlParser;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.jsoup.nodes.Element;
 
@@ -11,21 +10,20 @@ public class Page {
 	private List<Text> content = new ArrayList<Text>();
 	private int pageNumber;
 
-	public Page(Element el, Map<String, String> hindiFontClasses, List<String> boldFontClasses) {
+	public Page(Element el) {
 		if (el != null && el.childNodeSize() > 0) {
 			for (Element child : el.getElementsByClass("t")) {
-				Text textEntity = new Text(child, hindiFontClasses, boldFontClasses, null);
+				Text textEntity = new Text(child, false, null);
 				content.add(textEntity);
 			}
 		}
 		this.setHindi();
 	}
 
-	public static List<Page> buildPageFromNodeList(Element element, Map<String, String> hindiFontClasses,
-			List<String> boldFontClasses) {
+	public static List<Page> buildPageFromNodeList(Element element) {
 		List<Page> pageList = new ArrayList<Page>();
 		for (Element child : element.getElementsByClass("pf")) {
-			Page page = new Page(child, hindiFontClasses, boldFontClasses);
+			Page page = new Page(child);
 			pageList.add(page);
 		}
 		return pageList;
@@ -69,7 +67,7 @@ public class Page {
 	private String processTextEntities(String text, List<Text> content) {
 		int prevBold = -2;
 		for (int i = 0; i < content.size(); i++) {
-			if (content.get(i).containsBold() && i - prevBold > 1) {
+			if ((content.get(i).containsBold() || content.get(i).isColoured()) && i - prevBold > 1) {
 				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text,
 						Constants.BLOCK_DECORATION_BOUNDARY);
 				prevBold = i;

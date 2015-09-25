@@ -40,9 +40,9 @@ public class HtmlFileFilter {
 	private static void execute() throws IOException {
 		// String inputFolder =
 		// "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/tempPDF";
-		HtmlFileFilter.config = new Config(true);
-		config.setInputFolder("/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/htmlFiles");
-		config.setOutputFolder("/home/rakesh/Copy/Constitution/Consttn/output1");
+		HtmlFileFilter.config = new Config(false);
+		config.setInputFolder("/home/rakesh/Copy/NCERT/html");
+		config.setOutputFolder("/home/rakesh/Copy/NCERT/Text");
 		parseFileInFolder(config.getInputFolder(), config.getOutputFolder());
 	}
 

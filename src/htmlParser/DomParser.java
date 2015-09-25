@@ -3,8 +3,6 @@ package htmlParser;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,14 +18,15 @@ import com.steadystate.css.parser.CSSOMParser;
 import com.steadystate.css.parser.SACParserCSS3;
 
 public class DomParser {
+	private static final String FONT_COLOUR = "\\.fc";
 	private static final String BOLD = "Bold";
 	private static final String BASE64_PATTERN = "(?!base64)[^,]+(?=\\) format\\(\"truetype\"\\))";
 	private static final String FONT_FAMILY_PATTERN = "(?!font-family: )ff[0-9a-fA-F]+(?=;)";
 	private static final String FONT_FACE = "@font-face";
+	private static final String FONT_COLOUR_FAMILY = "(?!\\.)fc[0-9]+(?= \\{)";
+	private static final String FONT_COLOUR_PATTERN = "(?!\\.fc[0-9]+ \\{ color: rgb\\()[0-9]+, *[0-9]+, *[0-9]+(?=\\) \\})";
 	private Document dom;
 	private List<Page> pages;
-	private Map<String, String> hindiFontClasses = new HashMap<String, String>();
-	private List<String> boldFontClasses = new ArrayList<String>();
 
 	public DomParser(String file) {
 
@@ -35,10 +34,9 @@ public class DomParser {
 			File input = new File(file);
 			this.dom = Jsoup.parse(input, "UTF-8", "");
 
-			getFontClasses(this.dom, hindiFontClasses, boldFontClasses);
+			getFontClasses(this.dom);
 
-			pages = Page.buildPageFromNodeList(this.dom.getElementById(Constants.PAGE_CONTAINER_TAG),
-					hindiFontClasses, boldFontClasses);
+			pages = Page.buildPageFromNodeList(this.dom.getElementById(Constants.PAGE_CONTAINER_TAG));
 		} catch (IOException ioe) {
 
 		}
@@ -79,11 +77,14 @@ public class DomParser {
 		return text;
 	}
 
-	private static Map<String, String> getFontClasses(Document dom, Map<String, String> hindiFontClasses,
-			List<String> boldFontClasses) {
+	private static void getFontClasses(Document dom) {
+		TextPropertyVault vault = TextPropertyVault.getVault();
+		Map<String, String> hindiFontClasses = vault.getHindiFontClasses();
+		List<String> boldFontClasses = vault.getBoldFontClasses();
+		Map<String, Boolean> colouredClasses = vault.getColouredClasses();
 		for (Element style : dom.getElementsByTag(Constants.STYLE_TAG)) {
 			String data = style.data();
-			if (data.contains(FONT_FACE)) {
+			if (data.contains(FONT_FACE) || data.contains(FONT_COLOUR)) {
 				InputSource source = new InputSource(new StringReader(data));
 				CSSOMParser parser = new CSSOMParser(new SACParserCSS3());
 				CSSStyleSheet sheet;
@@ -109,6 +110,16 @@ public class DomParser {
 								}
 							}
 						}
+						String fcFamily = Util.substringRegex(cssText, FONT_COLOUR_FAMILY);
+						if (fcFamily != null) {
+							String fontColor = Util.substringRegex(cssText, FONT_COLOUR_PATTERN);
+							if (fontColor == null) {
+								System.out.println("ScrewedUP");
+							}
+							if (!colouredClasses.containsKey(fcFamily)) {
+								colouredClasses.put(fcFamily, Config.isColouredClass(fontColor));
+							}
+						}
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -116,6 +127,8 @@ public class DomParser {
 			}
 
 		}
-		return hindiFontClasses;
+		vault.setHindiFontClasses(hindiFontClasses);
+		vault.setBoldFontClasses(boldFontClasses);
+		vault.setColouredClasses(colouredClasses);
 	}
 }
