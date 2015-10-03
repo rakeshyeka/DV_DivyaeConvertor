@@ -111,7 +111,7 @@ public class Text {
 	private void updateAttributes(Element child, Boolean parentColoured, String parentFontConvertor) {
 		String classValue = child.attr("class");
 		String fontClass = Util.substringRegex(classValue, "ff[0-9]+");
-		String fontColour = Util.substringRegex(classValue, "fc[0-9]+");
+		String fontColour = Util.substringRegex(classValue, "\\bfc[0-9]+\\b");
 		TextPropertyVault vault = TextPropertyVault.getVault();
 		Map<String, String> hindiFontClasses = vault.getHindiFontClasses();
 		List<String> boldFontClasses = vault.getBoldFontClasses();

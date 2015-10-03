@@ -88,15 +88,19 @@ public class Util {
 		return decoded;
 	}
 
-	public static String substringRegex(String data, String regex) {
+	public static String substringRegex(String data, String regex, int group) {
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(data);
 		if (matcher.find()) {
-			return matcher.group(0);
+			return matcher.group(group);
 		} else {
 			return null;
 		}
 
+	}
+
+	public static String substringRegex(String data, String regex) {
+		return substringRegex(data, regex, 0);
 	}
 
 	public static boolean isNumber(String data) {

@@ -23,8 +23,9 @@ public class DomParser {
 	private static final String BASE64_PATTERN = "(?!base64)[^,]+(?=\\) format\\(\"truetype\"\\))";
 	private static final String FONT_FAMILY_PATTERN = "(?!font-family: )ff[0-9a-fA-F]+(?=;)";
 	private static final String FONT_FACE = "@font-face";
-	private static final String FONT_COLOUR_FAMILY = "(?!\\.)fc[0-9]+(?= \\{)";
+	private static final String FONT_COLOUR_FAMILY = "\\.(fc[0-9]+)";
 	private static final String FONT_COLOUR_PATTERN = "(?!\\.fc[0-9]+ \\{ color: rgb\\()[0-9]+, *[0-9]+, *[0-9]+(?=\\) \\})";
+	private static final String FONT_COLOUR_TRANSPARENT_PATTERN = "(?!\\.fc[0-9]+ \\{ color: )transparent(?= \\})";
 	private Document dom;
 	private List<Page> pages;
 
@@ -110,11 +111,14 @@ public class DomParser {
 								}
 							}
 						}
-						String fcFamily = Util.substringRegex(cssText, FONT_COLOUR_FAMILY);
+						String fcFamily = Util.substringRegex(cssText, FONT_COLOUR_FAMILY, 1);
 						if (fcFamily != null) {
 							String fontColor = Util.substringRegex(cssText, FONT_COLOUR_PATTERN);
 							if (fontColor == null) {
-								System.out.println("ScrewedUP");
+								fontColor = Util.substringRegex(cssText, FONT_COLOUR_TRANSPARENT_PATTERN);
+							}
+							if (fontColor == null) {
+								System.out.println("ScrewedUp");
 							}
 							if (!colouredClasses.containsKey(fcFamily)) {
 								colouredClasses.put(fcFamily, Config.isColouredClass(fontColor));

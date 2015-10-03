@@ -12,10 +12,11 @@ public class FontConvertor {
 		// .convertToUnicode("ÉËcnÉÒ");
 		// System.out.println(output);
 
-//		output = Kruti_To_Unicode
-//				.convertToUnicode("jk\"Vah; ikB~;p;kZ dh :ijs[kk");
+		// output = Kruti_To_Unicode
+		// .convertToUnicode("jk\"Vah; ikB~;p;kZ dh :ijs[kk");
 
-		output = Walkman_chanakya.convertToUnicode("ge lHkh dks] fo'ks\"kdj 'kq\"d ekSle esa] LosVj vFkok laf'y\"V oL=kksa dks 'kjhj ls mrkjrs le;");
+		output = Walkman_chanakya
+				.convertToUnicode("foKku lHkh izdkj osQ thou jpuk ,oa tSo  izØeksa dk foKku gSA tho txr dkSrqgy");
 		System.out.println(output);
 
 	}

@@ -72,7 +72,9 @@ public class Page {
 						Constants.BLOCK_DECORATION_BOUNDARY);
 				prevBold = i;
 			}
-			text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, content.get(i).getData());
+			if (!content.get(i).isColoured()) {
+				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, content.get(i).getData());
+			}
 		}
 		return text;
 	}
