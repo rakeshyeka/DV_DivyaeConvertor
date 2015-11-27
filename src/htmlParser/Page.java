@@ -66,14 +66,22 @@ public class Page {
 
 	private String processTextEntities(String text, List<Text> content) {
 		int prevBold = -2;
+		boolean pageHeaderFlag = true;
 		for (int i = 0; i < content.size(); i++) {
-			if ((content.get(i).containsBold() || content.get(i).isColoured()) && i - prevBold > 1) {
-				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text,
-						Constants.BLOCK_DECORATION_BOUNDARY);
-				prevBold = i;
-			}
-			if (!content.get(i).isColoured()) {
-				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, content.get(i).getData());
+			Text textEntity = content.get(i);
+			String fontSizeClass = textEntity.getClasses().containsKey("fs")
+					? textEntity.getClasses().get("fs") : "";
+			if (!fontSizeClass.equals("fs0") || !pageHeaderFlag) {
+				pageHeaderFlag = false;
+				if ((content.get(i).isColoured()) && i - prevBold > 1) {
+					text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text,
+							Constants.BLOCK_DECORATION_BOUNDARY);
+					text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, textEntity.getData());
+					prevBold = i;
+				}
+				if (!content.get(i).isColoured()) {
+					text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, textEntity.getData());
+				}
 			}
 		}
 		return text;

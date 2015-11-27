@@ -2,10 +2,13 @@ package htmlParser;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 
@@ -17,6 +20,7 @@ public class Text {
 	private boolean isFooterBoundary;
 	private boolean containsBold;
 	private List<Text> children = null;
+	private Map<String, String> classes = new HashMap<String, String>();
 
 	private String data = "";
 
@@ -34,9 +38,9 @@ public class Text {
 		}
 	}
 
-	public Text(Element textEl, Boolean parentColoured, String fontConvertor) {
+	public Text(Element textEl, Boolean parentColoured, String parentFontConvertor) {
 
-		updateAttributes(textEl, parentColoured, fontConvertor);
+		updateAttributes(textEl, parentColoured, parentFontConvertor);
 
 		if (textEl.childNodeSize() > 0) {
 			this.children = new ArrayList<Text>();
@@ -110,6 +114,7 @@ public class Text {
 
 	private void updateAttributes(Element child, Boolean parentColoured, String parentFontConvertor) {
 		String classValue = child.attr("class");
+		this.updateClasses(classValue);
 		String fontClass = Util.substringRegex(classValue, "ff[0-9]+");
 		String fontColour = Util.substringRegex(classValue, "\\bfc[0-9]+\\b");
 		TextPropertyVault vault = TextPropertyVault.getVault();
@@ -158,6 +163,26 @@ public class Text {
 
 	}
 
+	private void updateClasses(String classesString) {
+		List<String> classAttributes = Arrays.asList(StringUtils.split(classesString));
+
+		List<String> classKeyList = new ArrayList<String>();
+		classKeyList.add("x"); // x-axis position
+		classKeyList.add("y"); // y-axis position
+		classKeyList.add("fc"); // font colour
+		classKeyList.add("ff"); // font family
+		classKeyList.add("fs"); // font size
+		classKeyList.add("fc"); // font colour
+
+		for (String classValue : classAttributes) {
+			for (String classKey : classKeyList) {
+				if (classValue.startsWith(classKey)) {
+					this.classes.put(classKey, classValue);
+				}
+			}
+		}
+	}
+
 	public boolean hasChildren() {
 		return this.children != null;
 	}
@@ -192,6 +217,14 @@ public class Text {
 
 	public boolean isHindi() {
 		return isHindi;
+	}
+
+	public Map<String, String> getClasses() {
+		return classes;
+	}
+
+	public void setClasses(Map<String, String> classes) {
+		this.classes = classes;
 	}
 
 	private String decorateBoldText(String text) {
