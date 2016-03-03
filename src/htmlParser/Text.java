@@ -1,5 +1,8 @@
 package htmlParser;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,6 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.nodes.Element;
@@ -21,6 +28,7 @@ public class Text {
 	private boolean containsBold;
 	private List<Text> children = null;
 	private Map<String, String> classes = new HashMap<String, String>();
+	private Element rawElement = null;
 
 	private String data = "";
 
@@ -39,7 +47,7 @@ public class Text {
 	}
 
 	public Text(Element textEl, Boolean parentColoured, String parentFontConvertor) {
-
+		this.rawElement = textEl;
 		updateAttributes(textEl, parentColoured, parentFontConvertor);
 
 		if (textEl.childNodeSize() > 0) {
@@ -58,22 +66,27 @@ public class Text {
 			}
 		}
 
-		if (textEl.tagName().equals("div")) {
+		this.setFooterBoundary();
+	}
+
+	public String toString() {
+		if (this.rawElement!= null && this.rawElement.tagName().equals("div")) {
 			String finalText = "";
 			this.data = "";
 			String oldFontConvertor = null;
 			for (Text child : this.children) {
+				String childString = child.toString();
 				if (!Util.stringsEqual(oldFontConvertor, child.getFontConvertor())) {
 					finalText = convertToUnicode(finalText, oldFontConvertor);
 					this.addToData(finalText);
 					finalText = "";
-					if (!Util.isNullOrEmptyOrWhiteSpace(child.getData())) {
-						finalText += child.getData();
+					if (!Util.isNullOrEmptyOrWhiteSpace(childString)) {
+						finalText += childString;
 					}
 					oldFontConvertor = child.getFontConvertor();
 				} else {
-					if (!Util.isNullOrEmptyOrWhiteSpace(child.getData())) {
-						finalText += child.getData();
+					if (!Util.isNullOrEmptyOrWhiteSpace(childString)) {
+						finalText += childString;
 					}
 				}
 				this.containsBold = this.containsBold | child.containsBold() | child.isBold();
@@ -86,8 +99,8 @@ public class Text {
 				this.data = "";
 			}
 		}
-
-		this.setFooterBoundary();
+		
+		return this.data;
 	}
 
 	private void processNodeValue() {
@@ -110,6 +123,30 @@ public class Text {
 					String.format(CONVERSION_ERROR, text));
 		}
 		return text;
+	}
+	
+	private String convertToUnicodeJS(String text) {
+		String outputString = null;
+		try {
+			ScriptEngineManager manager = new ScriptEngineManager();
+			ScriptEngine jsEngine = manager.getEngineByExtension("js");
+			// Get script from JS File
+            FileInputStream fileInputStream = new FileInputStream("F:developmentjavascripttest.js");
+            if (fileInputStream != null) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(fileInputStream));
+         
+                jsEngine.eval(reader);
+                Invocable invocableEngine = (Invocable)jsEngine;
+                 
+				Object object = invocableEngine.invokeFunction(
+						"convert_to_unicode", new Object[] { text });
+				outputString = (String) object;
+				System.out.println("Result: " + object);
+            }
+		} catch (Exception e) {
+			
+		}
+		return outputString;
 	}
 
 	private void updateAttributes(Element child, Boolean parentColoured, String parentFontConvertor) {
@@ -193,10 +230,6 @@ public class Text {
 
 	public void setBold(boolean isBold) {
 		this.isBold = isBold;
-	}
-
-	public String getData() {
-		return data;
 	}
 
 	public List<Text> getChildren() {

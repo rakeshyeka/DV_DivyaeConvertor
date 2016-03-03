@@ -41,8 +41,8 @@ public class HtmlFileFilter {
 		// String inputFolder =
 		// "/home/rakesh/Copy/Constitution/Consttn/bilingual-constitution/tempPDF";
 		HtmlFileFilter.config = new Config(false);
-		config.setInputFolder("/home/rakesh/Copy/NCERT/02_HTML/Current");
-		config.setOutputFolder("/home/rakesh/Copy/NCERT/03_Text/Current");
+		config.setInputFolder("/home/rakesh/Copy/NCERT/02_HTML/Current/Psychology");
+		config.setOutputFolder("/home/rakesh/Copy/NCERT/03_Text/Current/Psychology");
 		parseFileInFolder(config.getInputFolder(), config.getOutputFolder());
 	}
 

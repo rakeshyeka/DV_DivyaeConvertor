@@ -48,7 +48,7 @@ public class Page {
 		for (int i = 0; i < this.content.size(); i++) {
 			if (this.content.get(i).isHindi()) {
 				hindiCount++;
-			} else if (!content.get(i).getData().equals("\n")) {
+			} else if (!content.get(i).toString().equals("\n")) {
 				contentSize++;
 			}
 		}
@@ -58,7 +58,7 @@ public class Page {
 		}
 	}
 
-	public String getText() {
+	public String toString() {
 		String text = "";
 		text = processTextEntities(text, this.content);
 		return text;
@@ -73,14 +73,13 @@ public class Page {
 					? textEntity.getClasses().get("fs") : "";
 			if (!fontSizeClass.equals("fs0") || !pageHeaderFlag) {
 				pageHeaderFlag = false;
-				if ((content.get(i).isColoured()) && i - prevBold > 1) {
+				if ((textEntity.isBold() || textEntity.isColoured()) && i - prevBold > 1) {
 					text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text,
 							Constants.BLOCK_DECORATION_BOUNDARY);
-					text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, textEntity.getData());
+					text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, textEntity.toString());
 					prevBold = i;
-				}
-				if (!content.get(i).isColoured()) {
-					text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, textEntity.getData());
+				} else {
+					text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, textEntity.toString());
 				}
 			}
 		}

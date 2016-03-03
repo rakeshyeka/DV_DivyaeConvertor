@@ -49,7 +49,7 @@ public class DomParser {
 		for (int i = 0; i < pages.size(); i++) {
 			if (pages.get(i).isHindi()) {
 				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, Constants.PAGE_DECORATION_BOUNDARY);
-				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, pages.get(i).getText());
+				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, pages.get(i).toString());
 				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, "");
 			}
 		}
@@ -61,7 +61,7 @@ public class DomParser {
 		for (int i = 0; i < pages.size(); i++) {
 			if (pages.get(i).isEnglish()) {
 				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, Constants.PAGE_DECORATION_BOUNDARY);
-				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, pages.get(i).getText());
+				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, pages.get(i).toString());
 				text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, "");
 			}
 		}
@@ -72,7 +72,7 @@ public class DomParser {
 		String text = "";
 		for (int i = 0; i < pages.size(); i++) {
 			text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, Constants.PAGE_DECORATION_BOUNDARY);
-			text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, pages.get(i).getText());
+			text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, pages.get(i).toString());
 			text = String.format(Constants.NEWLINE_JOIN_TEMPLATE, text, "");
 		}
 		return text;
